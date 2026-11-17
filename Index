@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Audio Visualizer Test</title>
+  <style>
+    body {
+      background: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #circle {
+      width: 100px;
+      height: 100px;
+      background: cyan;
+      border-radius: 50%;
+      transition: transform 0.05s;
+    }
+  </style>
+</head>
+<body>
+
+<div id="circle"></div>
+
+<script>
+navigator.mediaDevices.getUserMedia({ audio: true })
+.then(stream => {
+  const audio = new AudioContext();
+  const source = audio.createMediaStreamSource(stream);
+  const analyser = audio.createAnalyser();
+
+  source.connect(analyser);
+  const data = new Uint8Array(analyser.frequencyBinCount);
+  const circle = document.getElementById("circle");
+
+  function animate() {
+    analyser.getByteFrequencyData(data);
+
+    const volume = data.reduce((a, b) => a + b) / data.length;
+    const scale = 1 + volume / 50;
+
+    circle.style.transform = `scale(${scale})`;
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+})
+.catch(error => alert("Microphone access required."));
+</script>
+
+</body>
+</html>
